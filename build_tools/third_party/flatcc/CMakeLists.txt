@@ -86,6 +86,48 @@ external_cc_library(
   PUBLIC
 )
 
+# The iree-flatcc-cli tool runs on the build host to generate flatbuffer
+# schema headers at build time. When cross-compiling without prebuilt host
+# tools (IREE_HOST_BIN_DIR) a cross-compiled binary cannot execute on the
+# host (and freestanding targets such as wasm32 cannot even compile it), so
+# bootstrap a host copy at configure time using the default host toolchain.
+if(CMAKE_CROSSCOMPILING AND NOT IREE_HOST_BIN_DIR)
+  set(_FLATCC_HOST_BUILD_DIR "${IREE_BINARY_DIR}/host_tools/flatcc")
+  set(_HOST_EXECUTABLE_SUFFIX "")
+  if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+    set(_HOST_EXECUTABLE_SUFFIX ".exe")
+  endif()
+  set(_FLATCC_HOST_TOOL
+      "${_FLATCC_HOST_BUILD_DIR}/iree-flatcc-cli${_HOST_EXECUTABLE_SUFFIX}")
+  if(NOT EXISTS "${_FLATCC_HOST_TOOL}")
+    message(STATUS "Building host iree-flatcc-cli for cross-compiled flatbuffer schema generation")
+    execute_process(
+      COMMAND
+        "${CMAKE_COMMAND}"
+        -S "${CMAKE_CURRENT_SOURCE_DIR}/host"
+        -B "${_FLATCC_HOST_BUILD_DIR}"
+        "-DFLATCC_ROOT=${FLATCC_ROOT}"
+        -DCMAKE_BUILD_TYPE=Release
+      RESULT_VARIABLE _FLATCC_HOST_CONFIGURE_RESULT
+    )
+    if(NOT _FLATCC_HOST_CONFIGURE_RESULT EQUAL 0)
+      message(FATAL_ERROR "Configuring host iree-flatcc-cli failed (${_FLATCC_HOST_CONFIGURE_RESULT})")
+    endif()
+    execute_process(
+      COMMAND "${CMAKE_COMMAND}" --build "${_FLATCC_HOST_BUILD_DIR}" --config Release
+      RESULT_VARIABLE _FLATCC_HOST_BUILD_RESULT
+    )
+    if(NOT _FLATCC_HOST_BUILD_RESULT EQUAL 0)
+      message(FATAL_ERROR "Building host iree-flatcc-cli failed (${_FLATCC_HOST_BUILD_RESULT})")
+    endif()
+  endif()
+  set(IREE_FLATCC_HOST_TOOL "${_FLATCC_HOST_TOOL}" CACHE FILEPATH
+      "Host flatcc compiler used for schema generation when cross-compiling." FORCE)
+  # The cross-compiled CLI below is not built: it is useless on the target and
+  # freestanding toolchains cannot compile it.
+  return()
+endif()
+
 # The iree-flatcc-cli tool depends on POSIX APIs (e.g., posix_memalign).
 # Skip building it when POSIX support is disabled and import the host binary instead.
 if(NOT IREE_ENABLE_POSIX)

@@ -91,7 +91,7 @@ iree_cc_library(
 )
 
 set(_all_tests_platform_deps "")
-if(IREE_ARCH STREQUAL "wasm_32")
+if((EMSCRIPTEN OR IREE_ARCH STREQUAL "wasm_32"))
 else()
   list(APPEND _all_tests_platform_deps ::semaphore_thread_test)
 endif()

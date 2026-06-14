@@ -89,6 +89,10 @@ function(flatbuffer_c_library)
   set(IREE_FLATCC_TOOL_BINARY iree-flatcc-cli)
   if (IREE_HOST_BIN_DIR)
     set(IREE_FLATCC_TOOL_BINARY "${IREE_HOST_BIN_DIR}/iree-flatcc-cli")
+  elseif(IREE_FLATCC_HOST_TOOL)
+    # Host tool bootstrapped at configure time when cross-compiling without
+    # IREE_HOST_BIN_DIR (see build_tools/third_party/flatcc/CMakeLists.txt).
+    set(IREE_FLATCC_TOOL_BINARY "${IREE_FLATCC_HOST_TOOL}")
   endif()
 
   add_custom_command(

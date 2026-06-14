@@ -113,7 +113,7 @@ iree_cc_library(
 )
 
 set(_proactor_pool_platform_deps "")
-if(IREE_ARCH STREQUAL "wasm_32")
+if((EMSCRIPTEN OR IREE_ARCH STREQUAL "wasm_32"))
 else()
   list(APPEND _proactor_pool_platform_deps ::proactor_thread_runner)
 endif()

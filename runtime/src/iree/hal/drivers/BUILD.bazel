@@ -68,6 +68,16 @@ config_setting(
     },
 )
 
+# WebGPU is experimental and primarily targets WebAssembly/Emscripten, so it is
+# not in the default enabled_drivers list; enable it explicitly with
+# --//runtime/src/iree/hal/drivers:enabled_drivers=webgpu.
+config_setting(
+    name = "webgpu_enabled",
+    flag_values = {
+        ":enabled_drivers": "webgpu",
+    },
+)
+
 iree_runtime_cc_library(
     name = "drivers",
     srcs = ["init.c"],
@@ -99,6 +109,10 @@ iree_runtime_cc_library(
            }) +
            select({
                ":vulkan_enabled": ["//runtime/src/iree/hal/drivers/vulkan/registration"],
+               "//conditions:default": [],
+           }) +
+           select({
+               ":webgpu_enabled": ["//runtime/src/iree/hal/drivers/webgpu/registration"],
                "//conditions:default": [],
            }),
 )

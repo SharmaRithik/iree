@@ -340,19 +340,23 @@ iree_local_py_test(
     "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-iree_local_py_test(
-  NAME
-    cli_test
-  SRC
-    "cli_test.py"
-  ARGS
-    "--fixture-generator=$<TARGET_FILE:iree_tooling_profile_test_fixture_generator>"
-    "--iree-profile=$<TARGET_FILE:iree-profile>"
-  LABELS
-    "noriscv"
-  PACKAGE_DIRS
-    "${CMAKE_CURRENT_SOURCE_DIR}"
-)
+# The iree-profile tool is only built when tools/ is included (it requires
+# threading); skip the CLI test when the tool is unavailable.
+if(IREE_ENABLE_THREADING)
+  iree_local_py_test(
+    NAME
+      cli_test
+    SRC
+      "cli_test.py"
+    ARGS
+      "--fixture-generator=$<TARGET_FILE:iree_tooling_profile_test_fixture_generator>"
+      "--iree-profile=$<TARGET_FILE:iree-profile>"
+    LABELS
+      "noriscv"
+    PACKAGE_DIRS
+      "${CMAKE_CURRENT_SOURCE_DIR}"
+  )
+endif()
 """,
     inline = True,
 )

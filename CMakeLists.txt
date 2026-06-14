@@ -328,6 +328,14 @@ if(APPLE)
   set(IREE_HAL_DRIVER_VULKAN_DEFAULT OFF)
 endif()
 
+# WebGPU support is enabled by default only when targeting WebAssembly: the
+# driver's imports are implemented in JavaScript (provided by the hosting page
+# or worker) and stub out to unimplemented on other platforms.
+set(IREE_HAL_DRIVER_WEBGPU_DEFAULT ${IREE_HAL_DRIVER_DEFAULTS})
+if(NOT (EMSCRIPTEN OR CMAKE_SYSTEM_PROCESSOR STREQUAL "wasm32"))
+  set(IREE_HAL_DRIVER_WEBGPU_DEFAULT OFF)
+endif()
+
 option(IREE_HAL_DRIVER_AMDGPU "Enables the `amdgpu` runtime HAL driver" ${IREE_HAL_DRIVER_AMDGPU_DEFAULT})
 option(IREE_HAL_DRIVER_CUDA "Enables the 'cuda' runtime HAL driver" ${IREE_HAL_DRIVER_CUDA_DEFAULT})
 option(IREE_HAL_DRIVER_HIP "Enables the 'hip' runtime HAL driver" ${IREE_HAL_DRIVER_HIP_DEFAULT})
@@ -336,6 +344,7 @@ option(IREE_HAL_DRIVER_LOCAL_TASK "Enables the 'local-task' runtime HAL driver" 
 option(IREE_HAL_DRIVER_METAL "Enables the 'metal' runtime HAL driver" ${IREE_HAL_DRIVER_METAL_DEFAULT})
 option(IREE_HAL_DRIVER_NULL "Enables the 'null' runtime HAL driver" ${IREE_HAL_DRIVER_NULL_DEFAULT})
 option(IREE_HAL_DRIVER_VULKAN "Enables the 'vulkan' runtime HAL driver" ${IREE_HAL_DRIVER_VULKAN_DEFAULT})
+option(IREE_HAL_DRIVER_WEBGPU "Enables the 'webgpu' runtime HAL driver" ${IREE_HAL_DRIVER_WEBGPU_DEFAULT})
 
 option(IREE_HAL_EXECUTABLE_LOADER_DEFAULTS "Sets the default value for all runtime HAL executable loaders" ON)
 set(IREE_HAL_EXECUTABLE_LOADER_EMBEDDED_ELF_DEFAULT ${IREE_HAL_EXECUTABLE_LOADER_DEFAULTS})
@@ -402,6 +411,9 @@ if(IREE_HAL_DRIVER_NULL)
 endif()
 if(IREE_HAL_DRIVER_VULKAN)
   message(STATUS "  - vulkan")
+endif()
+if(IREE_HAL_DRIVER_WEBGPU)
+  message(STATUS "  - webgpu")
 endif()
 if(IREE_EXTERNAL_HAL_DRIVERS)
   message(STATUS "  + external: ${IREE_EXTERNAL_HAL_DRIVERS}")
@@ -687,6 +699,12 @@ include(iree_static_linker_test)
 include(iree_plugin_register)
 include(iree_genrule)
 include(iree_wasm_library)
+if(IREE_BUILD_TESTS)
+  # Must be included before any subdirectory that registers tests (e.g. the
+  # wasm CI link-coverage sample at samples/hal/hello is added before the
+  # third_party tree below).
+  include(iree_configure_testing)
+endif()
 
 # Default any sub-tree which doesn't provide its own package namespacing
 # to derive it relative to this directory and prefixed with iree/.
@@ -1134,10 +1152,6 @@ endif()
 
 if(IREE_BUILD_COMPILER)
   add_subdirectory(build_tools/third_party/stablehlo EXCLUDE_FROM_ALL)
-endif()
-
-if(IREE_BUILD_TESTS)
-  include(iree_configure_testing)
 endif()
 
 if(IREE_TARGET_BACKEND_METAL_SPIRV)

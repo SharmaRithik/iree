@@ -10,7 +10,7 @@
 
 iree_add_all_subdirs()
 
-if(IREE_ARCH STREQUAL "wasm_32")
+if((EMSCRIPTEN OR IREE_ARCH STREQUAL "wasm_32"))
 iree_cc_library(
   NAME
     backends
@@ -26,7 +26,7 @@ iree_cc_library(
 )
 endif()
 
-if(IREE_ARCH STREQUAL "wasm_32")
+if((EMSCRIPTEN OR IREE_ARCH STREQUAL "wasm_32"))
 iree_cc_test(
   NAME
     lifecycle_tests
@@ -41,7 +41,7 @@ iree_cc_test(
 )
 endif()
 
-if(IREE_ARCH STREQUAL "wasm_32")
+if((EMSCRIPTEN OR IREE_ARCH STREQUAL "wasm_32"))
 iree_cc_test(
   NAME
     nop_tests
@@ -56,7 +56,7 @@ iree_cc_test(
 )
 endif()
 
-if(IREE_ARCH STREQUAL "wasm_32")
+if((EMSCRIPTEN OR IREE_ARCH STREQUAL "wasm_32"))
 iree_cc_test(
   NAME
     timer_tests
@@ -71,7 +71,7 @@ iree_cc_test(
 )
 endif()
 
-if(IREE_ARCH STREQUAL "wasm_32")
+if((EMSCRIPTEN OR IREE_ARCH STREQUAL "wasm_32"))
 iree_cc_test(
   NAME
     resource_exhaustion_tests
@@ -86,7 +86,7 @@ iree_cc_test(
 )
 endif()
 
-if(IREE_ARCH STREQUAL "wasm_32")
+if((EMSCRIPTEN OR IREE_ARCH STREQUAL "wasm_32"))
 iree_cc_test(
   NAME
     inline_lifecycle_tests
@@ -101,7 +101,7 @@ iree_cc_test(
 )
 endif()
 
-if(IREE_ARCH STREQUAL "wasm_32")
+if((EMSCRIPTEN OR IREE_ARCH STREQUAL "wasm_32"))
 iree_cc_test(
   NAME
     inline_nop_tests

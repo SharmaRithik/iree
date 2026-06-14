@@ -199,6 +199,11 @@ set(IREE_BUILD_BINDINGS_TFLITE_JAVA OFF CACHE BOOL "" FORCE)
 set(IREE_HAL_DRIVER_DEFAULTS OFF CACHE BOOL "" FORCE)
 set(IREE_HAL_DRIVER_LOCAL_SYNC ON CACHE BOOL "" FORCE)
 set(IREE_HAL_DRIVER_LOCAL_TASK OFF CACHE BOOL "" FORCE)
+# WebGPU is wasm-only (its imports are implemented in JavaScript) so enable it
+# by default here; IREE_HAL_DRIVER_DEFAULTS is forced off above so the
+# platform-gated default in the root CMakeLists.txt would not apply. Not FORCEd
+# so users can still disable it with -DIREE_HAL_DRIVER_WEBGPU=OFF.
+set(IREE_HAL_DRIVER_WEBGPU ON CACHE BOOL "")
 
 # Executable loaders are opt-in for freestanding wasm. HAL transfer-only
 # programs, such as samples/hal/hello, do not need executable loaders, and the

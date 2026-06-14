@@ -21,6 +21,8 @@ iree_cc_library(
     iree::base
     iree::hal
     iree::hal::drivers::webgpu
+  DEFINES
+    "IREE_HAVE_HAL_WEBGPU_DRIVER_MODULE=1"
   PUBLIC
 )
 

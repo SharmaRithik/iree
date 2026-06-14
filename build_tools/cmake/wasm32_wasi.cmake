@@ -214,6 +214,9 @@ set(IREE_SYNCHRONIZATION_DISABLE_UNSAFE ON CACHE BOOL "" FORCE)
 set(IREE_HAL_DRIVER_DEFAULTS OFF CACHE BOOL "" FORCE)
 set(IREE_HAL_DRIVER_LOCAL_SYNC ON CACHE BOOL "" FORCE)
 set(IREE_HAL_DRIVER_LOCAL_TASK OFF CACHE BOOL "" FORCE)
+# Note: WebGPU is intentionally NOT enabled for WASI. Its imports are provided in
+# JavaScript, which a WASI host does not have; it is enabled by default only for
+# the Emscripten/browser target (see build_tools/cmake/wasm32.cmake).
 
 # Executable loaders are opt-in for wasm. Enabling VMVX here pulls the VM
 # bytecode schema-generation path into cross builds, which requires host tools.

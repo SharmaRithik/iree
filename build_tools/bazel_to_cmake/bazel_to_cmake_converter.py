@@ -165,16 +165,24 @@ class BuildFileFunctions(object):
             return True
         return False
 
+    # Emscripten deliberately leaves IREE_ARCH empty (it masquerades as x86; see
+    # iree_macros.cmake), so a plain `IREE_ARCH STREQUAL "wasm_32"` check misses
+    # it. Match Emscripten explicitly in addition to the freestanding wasm32
+    # toolchain so wasm-conditioned deps (e.g. the JS proactor) resolve there.
+    _WASM_ARCH_CONDITION = '(EMSCRIPTEN OR IREE_ARCH STREQUAL "wasm_32")'
+
     def _convert_platform_condition(self, constraint_label):
         """Returns a CMake condition string for a platform constraint label."""
         if constraint_label == "//build_tools/bazel:iree_is_wasm":
-            return 'IREE_ARCH STREQUAL "wasm_32"'
+            return self._WASM_ARCH_CONDITION
         cmake_name = _PLATFORM_CMAKE_SYSTEM_NAME.get(constraint_label)
         if not cmake_name:
             return None
         # CPU architecture constraints use IREE_ARCH; OS constraints use
         # CMAKE_SYSTEM_NAME.
         if constraint_label.startswith("@platforms//cpu:"):
+            if cmake_name == "wasm_32":
+                return self._WASM_ARCH_CONDITION
             return f'IREE_ARCH STREQUAL "{cmake_name}"'
         return f'CMAKE_SYSTEM_NAME STREQUAL "{cmake_name}"'
 
@@ -1492,6 +1500,7 @@ class BuildFileFunctions(object):
         resource_group=None,
         tags=None,
         testonly=None,
+        target_compatible_with=None,
         **kwargs,
     ):
         if not resource_group and tags:
@@ -1538,6 +1547,11 @@ class BuildFileFunctions(object):
         )
         testonly_block = self._convert_option_block("TESTONLY", testonly)
 
+        # Honor target_compatible_with so a platform-restricted suite (e.g. the
+        # wasm-only WebGPU CTS) is guarded the same way cc_library targets are;
+        # otherwise the suite references its (guarded, undefined) backends lib on
+        # other platforms and fails at configure time.
+        self._emit_platform_guard_begin(target_compatible_with)
         self._converter.body += (
             f"iree_hal_cts_test_suite(\n"
             f"{backends_block}"
@@ -1549,6 +1563,7 @@ class BuildFileFunctions(object):
             f"{testonly_block}"
             f")\n\n"
         )
+        self._emit_platform_guard_end(target_compatible_with)
 
     def iree_flatbuffer_c_library(self, name, srcs, flatcc_args=None, includes=None):
         name_block = self._convert_string_arg_block("NAME", name, quote=False)
