@@ -336,6 +336,8 @@ option(IREE_HAL_DRIVER_LOCAL_TASK "Enables the 'local-task' runtime HAL driver" 
 option(IREE_HAL_DRIVER_METAL "Enables the 'metal' runtime HAL driver" ${IREE_HAL_DRIVER_METAL_DEFAULT})
 option(IREE_HAL_DRIVER_NULL "Enables the 'null' runtime HAL driver" ${IREE_HAL_DRIVER_NULL_DEFAULT})
 option(IREE_HAL_DRIVER_VULKAN "Enables the 'vulkan' runtime HAL driver" ${IREE_HAL_DRIVER_VULKAN_DEFAULT})
+# WebGPU is experimental and off by default; opt in with -DIREE_HAL_DRIVER_WEBGPU=ON.
+option(IREE_HAL_DRIVER_WEBGPU "Enables the 'webgpu' runtime HAL driver" OFF)
 
 option(IREE_HAL_EXECUTABLE_LOADER_DEFAULTS "Sets the default value for all runtime HAL executable loaders" ON)
 set(IREE_HAL_EXECUTABLE_LOADER_EMBEDDED_ELF_DEFAULT ${IREE_HAL_EXECUTABLE_LOADER_DEFAULTS})
@@ -402,6 +404,9 @@ if(IREE_HAL_DRIVER_NULL)
 endif()
 if(IREE_HAL_DRIVER_VULKAN)
   message(STATUS "  - vulkan")
+endif()
+if(IREE_HAL_DRIVER_WEBGPU)
+  message(STATUS "  - webgpu")
 endif()
 if(IREE_EXTERNAL_HAL_DRIVERS)
   message(STATUS "  + external: ${IREE_EXTERNAL_HAL_DRIVERS}")
